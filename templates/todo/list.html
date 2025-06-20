@@ -2,38 +2,87 @@
 {% load static %}
 {% block content %}
 
-<div class="todocontainer">
-    {% for todo in todos %}
-        <div class="toto-item">    
-            <p>{{todo.name}}</p>
-            <p>{{todo.description}}</p>
-            <p>{{todo.complete}}</p>
-            <p>{{todo.completed_at}}</p>
-            <p>{{todo.exp}}</p>
-            <hr>
-        </div>
-    {% empty %}
-        <p>등록된 할일이 없습니다.</p>
-    {% endfor %}
-</div>
+<!-- Todo 등록 버튼 -->
 <button class="todoCreate" id="createBtn"> Todo 등록하기</button>
 
+<!-- Todo 리스트 출력될 컨테이너 -->
+<div class="todocontainer"></div>
+
 <script>
-    // 문서가 로드되면 리스트 항목을 불러와라
-    document.addEventListener("DOMContentLoaded", function(){
-        console.log("list loading!!")
-    });
+// 1. 초기화   
+document.addEventListener("DOMContentLoaded", init);
 
-    // 버튼을 클릭하면 서버에 접속해라
-    document.getElementById("createBtn").addEventListener("click", () => {
-        console.log("createBtn click!!")
-    });
+// 2. UI이벤트
+function init(){
+    UIEvents();
+    loadTodoList(); 
+}
 
- 
+// UI 이벤트2-1
+function UIEvents(){
+    document.getElementById("createBtn")
+    .addEventListener("click", onCreateClick);
+}
 
+function onCreateClick(){
+    window.location.href = "/todo/create/";
+}
+// 리스트 로드
+function loadTodoList(){
+    fetchTodoData()
+    .then(data => {
+        const todos = extractTodoArray(data); //
+        renderTodoList(todos); //탬플릿을 꾸며서 화면에 출력하기 함수
+    })
+    .catch(err => console.error('리스트 로드 실패', err));
+}
 
-</script>  
+// 서버에서 todo 목록가져오기
+function fetchTodoData(){
+    return axiosInstance.get('/todo/api/list/').then(res => res.data); 
+}
 
+// 응답에서 todo 배열 추출
+function extractTodoArray(data){
+    if(Array.isArray(data)) return data;
+    return [];
+}
 
+// 목록 출력
+function renderTodoList(todos){
+    const container = document.querySelector(".todocontainer"); // .todocontainer{}
+    container.innerHTML = "";
+    console.log('안녕')
+    todos.forEach(todo => 
+        container.appendChild(createTodoElement(todo))
+    );
+}
+
+function createTodoElement(todo){
+    const div = document.createElement("div");
+    div.className = "todo-item";
+
+    div.innerHTML = `
+        <p>안녕하세요</p>
+        <p><strong>Name:</strong> ${todo.name}</p>
+        <p><strong>Description:</strong> ${todo.description}</p>
+        <p><strong>Complete:</strong> ${todo.complete}</p>
+        <p><strong>Completed At:</strong> ${datetimeToString(todo.completed_at)}</p>
+        <p><strong>Experience Points:</strong> ${todo.exp}</p>
+        <button class="completeBtn">완료</button>
+        <hr>
+    `;
+
+    function datetimeToString(datetime){
+        if (!datetime) return "-";
+        const date = new Date(datetime);
+        return date.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
+    }
+        
+    return div;   
+    
+}
+
+</script>
 
 {% endblock %}
