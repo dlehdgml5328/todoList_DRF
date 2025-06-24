@@ -33,3 +33,43 @@ class TodoRetrieveAPI(APIView):
         serializer = TodoSerializer(todo)
 
         return Response(serializer.data)
+
+
+class TodoUpdateAPI(APIView):
+    def put(self, request, pk):
+        try:
+            todo = Todo.objects.get(pk=pk)
+        except Todo.DoesNotExist:
+            return Response(
+                {"error": "해당하는 todo가 없습니다."}, status=status.HTTP_404_NOT_FOUND
+            )
+        serializer = TodoSerializer(todo, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        todo = serializer.save()
+        serializer = TodoSerializer(todo)
+        return Response(serializer.data)
+
+    def patch(self, request, pk):
+        try:
+            todo = Todo.objects.get(pk=pk)
+        except Todo.DoesNotExist:
+            return Response(
+                {"error": "해당하는 todo가 없습니다."}, status=status.HTTP_404_NOT_FOUND
+            )
+        serializer = TodoSerializer(todo, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        todo = serializer.save()
+        serializer = TodoSerializer(todo)
+        return Response(serializer.data)
+
+
+class TodoDeleteAPI(APIView):
+    def delete(self, request, pk):
+        try:
+            todo = Todo.objects.get(pk=pk)
+        except Todo.DoesNotExist:
+            return Response(
+                {"error": "해당하는 todo가 없습니다."}, status=status.HTTP_404_NOT_FOUND
+            )
+        todo.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

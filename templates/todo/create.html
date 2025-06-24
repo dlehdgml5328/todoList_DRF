@@ -1,32 +1,103 @@
-{% extends "base.html" %}
-{% load static %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TodoList</title>
+
+<!-- css -->
+<link rel="stylesheet" type="text/css" href="/static/css/style.css">
+<!-- Axios -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
 
 <div class="container">
     <h2>Create a New Todo</h2>
 
     <div>
         <label for="name">Name:</label>
-        <input type="text"name="name"id="">
-    <div>
-        <label for="description">Description:</label>
-        <textarea type=""name="description"id="description"></textarea>
+        <input type="text" name="name" id="name">
     </div>
     <div>
-        <label for="complete">Complete</label>
-        <input type="checkbox"name="complete"id="complete">
+        <label for="description">Description:</label>
+        <textarea name="description" id="description"></textarea>
+    </div>
+    <div>
+        <label for="complete">Complete:</label>
+        <input type="checkbox" name="complete" id="complete">
+    </div>
+    <div>
+        <label for="completed_at">Completed At:</label>
+        <input type="datetime-local" name="completed_at" id="completed_at">
     </div>
     <div>
         <label for="exp">Experience Points:</label>
-        <input type="number"name="exp"id="exp" min="0">
+        <input type="number" name="exp" id="exp" min="0">
     </div>
-    <button type= "submit" id="todoCreate">Create</button>
+
+    <button type="button" id="todoCreate">Create</button>
 </div>
 
 <script>
-document.getElementById("todoCreate").addEventListener("click",()=>
-{
-    console.log("create click")
+// 1. 초기화
+document.addEventListener("DOMContentLoaded", init);
+
+// 2. UI 이벤트 바인딩
+function init(){
+    bindUIEvents();
+}
+
+function bindUIEvents(){
+    const btn = document.getElementById("todoCreate");
+    if (!btn) return;
+    btn.addEventListener("click", onCreateClick);
+}
+
+function onCreateClick(){
+    console.log("버튼 클릭!!");
+    const payload = gatherFormData();
+    createTodo(payload);
+}
+
+function gatherFormData(){
+    let expVal = document.getElementById('exp').value;
+    if (expVal === "") expVal = 0;
+
+    const completedAtInput = document.getElementById("completed_at").value;
+    const completedAt = completedAtInput ? new Date(completedAtInput).toISOString() : null;
+
+    return {
+        name: document.getElementById('name').value,
+        description: document.getElementById('description').value,
+        complete: document.getElementById('complete').checked,
+        completed_at: completedAt,
+        exp: Number(expVal)  // 여기가 expVal!!
+    };
+}
+
+function createTodo(payload){
+    axiosInstance.post("/todo/api/create/", payload)
+    .then(response => {
+        window.location.href = "/todo/list/";
+    })
+    .catch(error => {
+        console.error("Todo 생성 실패", error);
+        alert("Todo 생성 실패했습니다.");
+    });
+}
+
+// (디버깅용 추가 콘솔)
+document.getElementById("todoCreate").addEventListener("click", () => {
+    console.log("Create button clicked");
 });
 </script>
-{% endblock %}
+
+<!-- Global Scripts (순서 중요) -->
+<script src="/static/js/getCookie.js"></script>
+<script src="/static/js/axiosInstance.js"></script>
+<script src="/static/js/utils.js"></script>
+
+</body>
+</html>
