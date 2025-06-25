@@ -1,8 +1,9 @@
+
 {%load static%}
 <div>
     <h1> Todo List</h1>
     <div>
-        <a href="{% url 'list' %}">목록</a>
+        <a href="{% url 'todo_List' %}">목록</a>
         {%if user.is_authenticated%}
             <button>로그아웃</button>
         {%else%}

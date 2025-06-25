@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from .models import Todo
 from .serializers import TodoSerializer
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 
 
 class TodoListAPI(APIView):
@@ -73,3 +73,35 @@ class TodoDeleteAPI(APIView):
             )
         todo.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# DRF_GenericAPIView
+# list
+class TodoGenericsListAPI(generics.ListAPIView):
+    queryset = Todo.objects.all()
+    serializer_class = TodoSerializer
+
+
+# create
+class TodoGenericsCreateAPI(generics.CreateAPIView):
+    pass
+
+
+# retrieve
+class TodoGenericsRetrieveAPI(generics.RetrieveAPIView):
+    pass
+
+
+# update
+class TodoGenericsUpdateAPI(generics.UpdateAPIView):
+    pass
+
+
+# delete
+class TodoGenericsDeleteAPI(generics.DeleteAPIView):
+    pass
+
+
+# ListCreate
+class TodoGenericsListCreateAPI(generics.ListCreateAPIView):
+    pass
