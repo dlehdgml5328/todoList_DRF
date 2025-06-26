@@ -2,72 +2,79 @@
 {% load static %}
 {% block content %}
 
-<!-- Todo 등록 버튼 -->
-<button class="todoCreate" id="createBtn"> Todo 등록하기</button>
-
-<!-- Todo 리스트 출력될 컨테이너 -->
 <div class="todocontainer"></div>
+<button class="todoCreate" id="createBtn"> Todo 등록하기</button>
+<div class="pagination"></div>
 
 <script>
-// 1. 초기화   
+// 1. 문서가 완전히 로드되면 초기화 함수 실행
 document.addEventListener("DOMContentLoaded", init);
 
-// 2. UI이벤트
+// 2. 초기화: UI 이벤트 연결 및 첫 페이지 Todo 목록 로드
 function init(){
     UIEvents();
-    loadTodoList(); 
+    loadTodoList(1); 
 }
 
-// UI 이벤트2-1
+// 2-1. UI 이벤트 바인딩: "Todo 등록하기" 버튼 클릭 시 등록 페이지로 이동
 function UIEvents(){
     document.getElementById("createBtn")
     .addEventListener("click", onCreateClick);
 }
 
+// 2-1-1. 등록 버튼 클릭 시 /todo/create/로 이동
 function onCreateClick(){
     window.location.href = "/todo/create/";
 }
-// 리스트 로드
-function loadTodoList(){
+
+// 3. 서버에서 Todo 목록 불러오기
+function loadTodoList(page){
     fetchTodoData()
     .then(data => {
         const todos = extractTodoArray(data); //
         renderTodoList(todos); //탬플릿을 꾸며서 화면에 출력하기 함수
+        renderPagination(data, Page);
     })
     .catch(err => console.error('리스트 로드 실패', err));
 }
 
-// 서버에서 todo 목록가져오기
+// 3-1. axios를 이용해 서버로부터 특정 페이지의 Todo 목록 가져오기
 function fetchTodoData(){
-    return axiosInstance.get('/todo/api/list/').then(res => res.data); 
+    return axiosInstance
+    .get('/todo/viewsets/view/')
+    .then(res => res.data); 
 }
 
-// 응답에서 todo 배열 추출
+// 3-2. API 응답 형식에 따라 Todo 배열 추출(페이지네이션들어오면 if 추가)
 function extractTodoArray(data){
-    if(Array.isArray(data)) return data;
+    if(Array.isArray(data)) return data; //데이터 검수
     return [];
 }
 
-// 목록 출력
+// 3-3. 추출된 Todo 항목들을 화면에 렌더링
 function renderTodoList(todos){
     const container = document.querySelector(".todocontainer"); // .todocontainer{}
     container.innerHTML = "";
-    console.log('안녕')
     todos.forEach(todo => 
         container.appendChild(createTodoElement(todo))
     );
 }
 
+// 3-3-1. 단일 Todo 객체를 HTML 요소로 생성
 function createTodoElement(todo){
     const div = document.createElement("div");
-    div.className = "todo-item";// <div class = "todo-item"> </div>
+    div.className = "todo-item"; //<div class="todo-item completed"></div>
 
+    // 완료된 항목이면 밑줄 적용
     if (todo.complete){
-        div.classList.add("completed"); // <div class="todo-item completed" > </div>
-    }// .todo-item.completed{ }
-    div.addEventListener("click",()=>detailView(todo.id))
+        div.classList.add("completed"); 
+    }
+
+    // 목록 클릭 시 상세 페이지 이동
+    div.addEventListener("click", () => detailView(todo.id))
+
+    // HTML 내용 설정
     div.innerHTML = `
-        <p>안녕하세요</p>
         <p><strong>Name:</strong> ${todo.name}</p>
         <p><strong>Description:</strong> ${todo.description}</p>
         <p><strong>Complete:</strong> ${todo.complete}</p>
@@ -76,25 +83,67 @@ function createTodoElement(todo){
         <button class="completeBtn">완료</button>
         <hr>
     `;
+
     div.querySelector(".completeBtn")
-    .addEventListener("click",e=> {
-        e.stopPropagation();
-        toComplete(todo.id);
+        .addEventListener('click', e => {
+            e.stopPropagation();
+            toComplete(todo.id);
+            console.log("완료버튼 클릭");
     });
-    return div; 
-}
-function toComplete(id){
-    axiosInstance.patch(`/todo/api/update/${id}/`,{complete:true})
-    .then(()=> loadTodoList(1)) //false
-    .catch(err=> console.error('완료 처리 실패:',err));
-}
-//상세 페이지로 이동 트리거가 없다.
-function detailView(id){
-    window.location.href=`/todo/detail/${id}/`;
+
+    return div;   
 }
 
+// 3-3-2. 완료 버튼 클릭 시 해당 Todo 항목을 완료 상태로 변경
+function toComplete(id){
+    axiosInstance.patch(`/todo/viewsets/view/${id}/`, {complete:true}) //
+    .then(() => loadTodoList()) 
+    .catch(err => console.error("완료 처리 실패:", err)); 
+}
+
+// 3-3-3. 상세 페이지로 이동 (← 이전, 1 2 3, → 다음)
+function detailView(id) {
+    window.location.href = `/todo/detail/${id}/`;
+}
+
+// 3-4. 페이지네이션 구성
+function renderPagination(data, currentPage){
+    const wrapper = document.querySelector(".pagination");
+    wrapper.innerHTML = "";
+
+    const totalPages = data.page_count; // 총페이지수를 변수에 저장
     
 
-</script>
+    // 이전페이지 버튼
+    const prevBtn = document.createElement("button");
+    prevBtn.innerText = "<"; 
+    prevBtn.disabled = !data.previous;
+    // data.previous 이전데이터 DRf 기본적으로 제공해주는 페이지네이션 응답 속성 이름
+    prevBtn.addEventListerner("click", () => loadTodoList(currentPage - 1) );
+    wrapper.appendChild(prevBtn);
 
+    // 개별 페이지 버튼들 생성
+    for(let i = 1; i <= totalPages; i++){ // for ( 초기값; 조건; 증가){ if(){} }
+        const btn = document.createElement("button");
+        btn.innerText = i;
+        if(i === currentPage){
+            btn.disabled = true;
+            btn.classList.add("active"); // css로 .active 스타일 지정
+        }
+        btn.addEventListerner("click", () => loadTodoList(i));
+        wrapper.appendChild(btn);
+    } 
+
+    // 다음 페이지 버튼 
+    const nextBtn = document.createElement("button"); 
+    nextBtn.innerText = ">";
+    nextBtn.disabled = !data.next;
+    nextBtn.addEventListerner("click", () => loadTodoList(currentPage + 1) );
+    wrapper.appendChild(nextBtn);
+} 
+
+
+
+
+</script>  
 {% endblock %}

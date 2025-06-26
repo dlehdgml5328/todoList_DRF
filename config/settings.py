@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-g@_4elqtg)0os8mhn@t3_3t)#ykg4t#^vak(w&3a^8gdv)jc++"
+SECRET_KEY = "django-insecure-_ui4xw0(=)xx)3^i1ub_l!)aht&+%irsu$z+5l5i1+z_=+gy28"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -30,7 +30,6 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -128,3 +127,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+
+LOGIN_REDIRECT_URL= "/todo/list/"
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "todo.pagination.CustomPageNumberPagination",
+    "PAGE_SIZE": 5,
+}
