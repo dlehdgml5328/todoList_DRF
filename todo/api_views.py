@@ -4,7 +4,7 @@ from .serializers import TodoSerializer
 from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework import viewsets
-
+from rest_framework.parsers import MultiPartParser,FormParser
 
 # 전체보기
 class TodoListAPI(APIView):
@@ -16,6 +16,8 @@ class TodoListAPI(APIView):
 
 # 생성하기
 class TodoCreateAPI(APIView):
+    parser_classes=[MultiPartParser,FormParser]
+
     def post(self, request):
         serializer = TodoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -39,6 +41,7 @@ class TodoRetrieveAPI(APIView):  # 개발자가 커스터마이징 형식으로 
 
 # 수정하기
 class TodoUpdateAPI(APIView):
+    
     def put(self, request, pk):
         try:
             todo = Todo.objects.get(pk=pk)
@@ -125,18 +128,20 @@ class TodoGenericsListCreateAPI(generics.ListCreateAPIView):
 class TodoGenericsRetrieveUpdateDeleteAPI(generics.RetrieveUpdateDestroyAPIView):
     queryset = Todo.objects.all()
     serializer_class = TodoSerializer
-
-
+from .pagination import CustomPageNumberPagination
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
 # DRF_ViewSets
 # viewSet
 class TodoViewSet(viewsets.ModelViewSet):
     # queryset = Todo.objects.all().order_by("-created_at")
     serializer_class = TodoSerializer
-
+    #pagination
+    pagination_class=CustomPageNumberPagination
     #인증 
-
+    authentication_classes=[SessionAuthentication]
     #권한
-
+    permission_classes=[IsAuthenticated]
     def get_queryset(self):
         qs = Todo.objects.all().order_by("-created_at")
         return qs
