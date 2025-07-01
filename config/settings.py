@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 CUSTOM_APPS = [
     "todo",
+    "interaction",
 ]
 
 THIRD_PARTY_APPS = [

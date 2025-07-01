@@ -13,7 +13,7 @@ class Todo(models.Model):
     image =models.ImageField(upload_to="todo_images/",blank=True)
     def __str__(self):
         return self.name
-    #기본 동작 보안: complete 값에 딸 ㅏ자동으로 시간이 처리되게
+    #기본 동작 보안: complete 값에 따라자동으로 시간이 처리되게
     def save(self, *args, **kwargs):
         if self.complete and self.completed_at is None:
             self.completed_at = timezone.now()

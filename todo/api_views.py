@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from .models import Todo
 from .serializers import TodoSerializer
 from rest_framework.response import Response
-from rest_framework import status, generics
+from rest_framework import status, generics,filters
 from rest_framework import viewsets
 from rest_framework.parsers import MultiPartParser,FormParser
 
@@ -142,6 +142,11 @@ class TodoViewSet(viewsets.ModelViewSet):
     authentication_classes=[SessionAuthentication]
     #권한
     permission_classes=[IsAuthenticated]
+    #검색 기능
+ 
+# 검색기능 
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["name", "description"]
     def get_queryset(self):
         qs = Todo.objects.all().order_by("-created_at")
         return qs
