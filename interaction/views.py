@@ -13,8 +13,11 @@ def todo_detail_with_interaction(request, pk):
     like_obj = Like.objects.filter(todo=todo, user=user).first()
     is_liked = like_obj.is_like if like_obj else False
     like_count = Like.objects.filter(todo=todo, is_like=True).count()
+    
     # 북마크 여부
     bookmark_obj = Bookmark.objects.filter(todo=todo, user=user).first()
+    is_marked=bookmark_obj.is_marked if bookmark_obj else False
+    bookmark_count=Bookmark.objects.filter(todo=todo,is_marked=True).count()
     # 댓글 목록
     comments = Comment.objects.filter(todo=todo).order_by("-created_at")
 
@@ -24,6 +27,8 @@ def todo_detail_with_interaction(request, pk):
         "is_liked": is_liked,
         "like_count": like_count,
         "bookmark_obj": bookmark_obj,
+        "is_marked":is_marked,
+        "bookmark_count":bookmark_count,
         "comments": comments,
     } # context는 템플릿에서 보여줄 데이터를 모아놓은 바구니
 

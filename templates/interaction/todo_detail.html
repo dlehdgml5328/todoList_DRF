@@ -9,8 +9,10 @@
   <p>좋아요를 누르지 않았어요.</p>
 {% endif %}
 <hr>
+<p>🔖 북마크 수:{{bookmark_count}}</p>
+
 <p>🔖 북마크 상태: 
-    {% if is_bookmarked %}
+    {% if is_marked %}
         <p>북마크 선택이 되었음</p>
     {% else %}
         <p>북마크 선택이 안되었음</p>
