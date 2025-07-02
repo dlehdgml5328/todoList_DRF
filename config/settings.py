@@ -45,6 +45,7 @@ THIRD_PARTY_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    'django_extensions',
 ]
 
 INSTALLED_APPS = CUSTOM_APPS + THIRD_PARTY_APPS

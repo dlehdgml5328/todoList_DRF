@@ -1,54 +1,69 @@
-from .models import Like, Bookmark,Comment
 from rest_framework import serializers
+from .models import Like, Bookmark, Comment
 
 
-#user.username,todo.name
+# LikeSerializer
+class LikeSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username", read_only=True)  
+    todo_name = serializers.CharField(source="todo.name", read_only=True) 
 
-class LikeSerializer():
-    username=serializers.CharField(source="user.username",read_only=True)
-    todo_name=serializers.CharField(source="todo.name",read_only=True)
     class Meta:
-        model =Like
-        fields=["id","todo","todo_name","user","username","is_like"]
-        read_onlyfields=["user"]
-# read_only=True: 이 필드는 출력전용으로 클라이언트가 값을 보내도 
-# 저장에는사용되지 않습니다.
+        model = Like
+        fields = ["id", "todo", "todo_name", "user", "username", "is_like"]
+        read_only_fields = ["user"] 
 
-class BookmarkSerializer():
-    username=serializers.CharField(source="user.username",read_only=True)
+
+# BookmarkSerializer
+class BookmarkSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username", read_only=True) 
+    todo_name = serializers.CharField(source="todo.name", read_only=True) 
+
     class Meta:
-        model =Bookmark
-        fields=["id","todo","todo_name","user","username","is_marked"]
-        read_onlyfields=["user"]
+        model = Bookmark
+        fields = ["id", "todo", "todo_name", "user", "username", "is_marked"]
+        read_only_fields = ["user"]
 
-class CommentSerializer():
-    username=serializers.CharField(source="user.username",read_only=True)
-    todo_name=serializers.CharField(source="todo.name",read_only=True)
 
-    like_count = serializers.SerializerMethodField()
+# CommentSerializer 글에 대한 좋아요 기능을 함께 다루기 위한 설계방식
+class CommentSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username", read_only=True) 
+    todo_name = serializers.CharField(source="todo.name", read_only=True) 
+    like_count = serializers.SerializerMethodField() 
+    is_liked = serializers.SerializerMethodField() 
+
     class Meta:
-        model =Comment
-        fields=["id","todo","todo_name","user","username","content"
-                ,"created_at","like_count"]
-        read_onlyfields=["todo","user","created_at"]
-        # 폼에서 사용자가 수정할 수 없어야 하는 필드를 명확히 구분해주기 위한 용도
+        model = Comment
+        fields = [
+            "id", 
+            "todo",  
+            "todo_name", 
+            "user", 
+            "username",  
+            "content",  
+            "created_at",  
+            "like_count",  
+            "is_liked",  
+        ]
+        read_only_fields = ["todo", "user", "created_at"] 
 
-    def get_like_count(self,obj):
-        return obj.likes.count()
 
-    def get_is_liked(self,obj):
+    def get_like_count(self, obj):
+        return obj.likes.count()  
+
+    def get_is_liked(self, obj):
         request = self.context.get("request")
         if request and request.user.is_authenticated:
             return obj.likes.filter(id=request.user.id).exists()
         return False
 
 
+from .models import CommentLike
 
 class CommentLikeSerializer(serializers.ModelSerializer):
-    username=serializers.CharField(source="user.username",read_only=True)
-    comment_content= serializers.CharField(source="comment.content",read_only=True)
+    username = serializers.CharField(source="user.username", read_only=True) 
+    comment_content = serializers.CharField(source="comment.content", read_only=True) 
 
     class Meta:
-        model =Comment
-        fields=["id","user","username","comment","comment_contetnt","is_like"]
-        read_onlyfields=["todo","user","created_at"]
+        model = CommentLike
+        fields = ['id', 'comment', 'comment_content', 'user', 'username', 'is_like', 'liked_at']
+        read_only_fields = ['user', 'liked_at'] 

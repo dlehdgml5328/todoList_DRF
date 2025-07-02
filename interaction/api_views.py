@@ -1,30 +1,32 @@
+
 from rest_framework import viewsets
-from .models import Like,Bookmark,Comment,CommentLike
-from .serializers import LikeSerializer,BookmarkSerializer,CommentSerializer,CommentLikeSerializer
+from .models import Like, Bookmark, Comment, CommentLike
+from .serializers import LikeSerializer, BookmarkSerializer, CommentSerializer 
 from rest_framework import permissions
 from rest_framework.decorators import action
 from todo.models import Todo
 from todo.serializers import TodoSerializer
 from rest_framework.response import Response
+from .serializers import CommentLikeSerializer
 from django.shortcuts import get_object_or_404
 
 
 class LikeViewSet(viewsets.ModelViewSet):
-    queryset = Like.object.all()# 좋아요의 전체 데이터
-    serializer_class =LikeSerializer # 직렬화/역직렬화 
-    permission_classes=[permissions.IsAuthenticated]# 권한
-    
-    @action(detail=True,methods=["post"])
-    def toggle(self,request,pk=None):
-        todo=Todo.objects.get(pk=pk)
-        user =request.user
-        like,created =Like.objects.get_or_create(todo=todo,user=user)
-        like.is_like=not like.is_like
+    queryset = Like.objects.all() # 좋아요의 전체 데이터
+    serializer_class = LikeSerializer # 직렬화/역직렬화
+    permisson_classes = [permissions.IsAuthenticated] #권한
+
+    @action(detail=True, methods=["post"])
+    def toggle(self, request, pk=None):
+        todo = Todo.objects.get(pk=pk)
+        user = request.user 
+        like, created = Like.objects.get_or_create(todo=todo, user=user)
+        like.is_like = not like.is_like
         like.save()
-        serializer = TodoSerializer(todo,context={"request":request})
+        serializer = TodoSerializer(todo, context={"request": request})
         return Response(serializer.data)
     
-
+    
 class BookmarkViewSet(viewsets.ModelViewSet): # 북마크 기능을 위한 ViewSet
     queryset = Bookmark.objects.all() 
     serializer_class = BookmarkSerializer 

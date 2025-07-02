@@ -67,5 +67,7 @@ urlpatterns = [
 
     # logout API
     path("api/custom-logout/", CustomLogoutAPI.as_view(), name="custom-logout"),
+   
+   
 
 ]
